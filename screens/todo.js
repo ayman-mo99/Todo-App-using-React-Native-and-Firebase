@@ -4,6 +4,7 @@ import { globalStyles } from '../styles/global';
 import * as firebase from "firebase";
 import 'firebase/firestore';
 import { MaterialIcons } from '@expo/vector-icons';
+import { CheckBox } from 'react-native-elements'
 import AddTodo from './addTodo';
 
 export default function todo({ navigation }) {
@@ -13,8 +14,10 @@ export default function todo({ navigation }) {
   const usersRef = db.collection('todo').doc(firebase.auth().currentUser.uid)
 
   useEffect(()=>{
+    console.log("fire base");
     if(load==false){usersRef.set({name:todos})}
-  },[todos.length])
+  },[todos])
+
   useEffect(() => data(), []);
 
   async function data() {
@@ -46,7 +49,7 @@ const submitHandler = (text) => {//----------------------------- add todo
   if(text.length > 3){
     setTodos(prevTodos => {
       return [
-        { text, key: Math.random().toString() },
+        { text, key: Math.random().toString(),complet:false },
         ...prevTodos
       ];
     });
@@ -57,7 +60,7 @@ const submitHandler = (text) => {//----------------------------- add todo
   } 
 };
 
-function MakeChange(key,text){
+const MakeChange=(key,text)=>{
   var temp = [...todos];
   for(var i = 0 ;i<todos.length ; i++ ){
     if(temp[i].key==key){
@@ -67,7 +70,15 @@ function MakeChange(key,text){
   setTodos(temp);
 }
 
-
+const  IconPress=(key)=>{
+  var temp = [...todos];
+  for(var i = 0 ;i<todos.length ; i++ ){
+    if(temp[i].key==key){
+      temp[i].complet=(!temp[i].complet);
+    }
+  }
+  setTodos(temp);
+}
 if(load ){
     return(
       <View style={styles.containerr}>
@@ -94,8 +105,10 @@ else{
            <TouchableOpacity  onPress={() => navigation.navigate('change',{title: item.text,
                                                                             ky:item.key,
                                                                             MakeChange:MakeChange})}>
-           <Text style={styles.itemText}>{item.text}</Text> 
+              {item.complet && <Text style={styles.test}>{item.text}</Text>}
+              {(!item.complet) && <Text style={styles.itemText}>{item.text}</Text>}
            </TouchableOpacity>
+           <CheckBox  style={{ padding: 0}} checked={item.complet} onIconPress={()=>IconPress(item.key)} />
            </View>
             )}
           />
@@ -144,4 +157,7 @@ containerr: {
   alignItems: "center",
   justifyContent: "flex-start"
 },
+test:{
+  textDecorationLine: 'line-through', 
+  textDecorationStyle: 'solid'}
 });
